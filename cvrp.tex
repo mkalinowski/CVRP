@@ -1,0 +1,86 @@
+\documentclass[fleqn,11pt]{article}
+\usepackage{amsmath}
+\usepackage[utf8x]{inputenc}
+\usepackage{polski}
+\usepackage{a4wide}
+
+\title{{\Huge \textbf{Rozwiązanie problemu wyznaczania tras - CVRP} \\}
+         {\Large Specyfikacja projektu}}
+\date{Wrocław, \today}
+\author{Mikołaj Kalinowski i Paweł Pietraszewski}
+
+\begin{document}
+\maketitle
+
+\section{Opis problemu}
+VRP (Vehicle Routing Problem) to jeden z problemów kombinatorycznej optymalizacji, który jest znany zarówno z istotnych zastosowań praktycznych jak i ze znacznej trudności rozwiązania.
+
+Spojrzymy na ten problem rozwiązując następujące zadanie:
+
+\begin{verbatim}
+Cysterna zwozi mleko zabierając je (każdego dnia) z gospodarstw rolnych.  
+Zgodnie z umową, rolnik dostarcza ustaloną ilość mleka.  Cysterna 
+w ciągu dnia musi wykonać kilka kursów.  Zaplanować trasy cysterny, 
+aby liczba przejechanych kilometrów była minimalna.
+\end{verbatim}
+
+Uściślając definicję, rozwiązanie VRP będzie dotyczyło wyznaczenia optymalnych tras dla floty pojazdów przejeżdżających z centrali do swoich klientów, dostarczając do nich pewne towary (w tym przypadku - popyt na mleko).  Zwykle do problemu dodaje się dodatkowe wymagania i w tym przypadku rozpatrzymy wersję z ograniczeniami wynikającymi z treści zadania.  Ograniczona wersja problemu to Constrained VRP - CVRP.
+
+\section{Struktura danych wejściowych}
+
+Dane wejściowe problemu to graf ważony z dodatkowymi wagami na wierzchołkach.
+Dla uproszczenia modelu przyjmujemy że zadany graf jest pełny, że wagi krawędzi spełniają nierówność trójkąta oraz że każde miasto można odwiedzić tylko raz.  Zadania niespełniające tych ograniczeń można zredukować poprzed dodanie do grafu specjalnych krawędzi.
+
+Wydajność i poprawność implementacji VRP będzie testowana z użyciem popularnych zbiorów danych znalezionych w literaturze.  Użyte zostanie repozytorium stworzone przez Augerat \cite{AUG} oraz zbiór testów z TSPLIB \cite{TSPLIB}.  Jak później zauważymy, VRP jest istotnie powiązany z problemem komiwojażera (TSP) więc wydajność i poprawność implementacji VRP można testować korzystając z danych dla drugiego problemu.
+
+\section{Notacja}
+
+Rozpatrzmy graf pełny $G = (V, E)$ gdzie $V = {0, 1, ... n}$ to zbiór klientów, ze specjalnie wyróżnionym elementem ${ 0 }$ oznaczającym centralę.  Każdy klient jest powiązany z popytem $d_i \in N$ przy czym $d_0 = 0$.  Zbiór $E$ zawiera krawędzie $e = (i,j)$ z których każda krawędź ma wagę $c_e = c_{ij} \geq 0$ oznaczającą odległość przejazdu z $i$ do $j$, dla $0 \leq i, j \leq n$.  Odległości są symetryczne i spełniają: $c_{ij} = c_{ji}$ oraz $c_{ii} = 0$.
+
+Rozwiązanie kombinatoryczne definiuje podział $V$ na cykle ${R_1, ..., R_k}$ z których jedynym przecięciem jest wierzchołek $0$.  Każdy z cyklów $R \subseteq V$ rozwiązania musi spełniać $d(R) = \sum_{d \in R}^{} { d } < C$.
+
+\section{Definicja problemu}
+    Z każdą krawędzią grafu $e$ wiążemy zmienną $x_e$ oznaczającą ilość wystąpień tej krawędzi w cyklach z rozwiązania.  Definiujemy następujący problem programowania całkowitoliczbowego:
+
+\begin{equation}
+    \begin{aligned}
+        & min \sum_{e \in E}^{} { c_e \cdot x_e } \\
+    \end{aligned}
+\end{equation}
+\begin{equation}
+    \begin{aligned}
+        & \sum_{e = (0,j) \in E}^{} { x_e = 2k } \\
+    \end{aligned}
+\end{equation}
+\begin{equation}
+    \begin{aligned}
+        & \sum_{e = (i,j) \in E}^{} { x_e = 2 } \quad {\forall{i \in N}} \\
+    \end{aligned}
+\end{equation}
+\begin{equation}
+    \begin{aligned}
+        & \sum_{e = (i,j) \in E, i \in V, j \notin V}^{} { x_e \geq 2b(V) } \quad  {V \subset N, |V| > 1} \\
+    \end{aligned}
+\end{equation}
+\begin{equation}
+    \begin{aligned}
+        & {0 \leq x_e \leq 1} \quad \forall{e = {i, j}} \in E, i, j \neq 0 \\
+    \end{aligned}
+\end{equation}
+\begin{equation}
+    \begin{aligned}
+        & {0 \leq x_e \leq 2} \quad \forall{e = {0, j}} \in E \\
+    \end{aligned}
+\end{equation}
+
+
+Warunek $(2)$ i $(3)$ to ograniczenia stopnia w grafie narzucające odwiedzenie każdego miasta tylko raz. Warunek $(4)$ zadaje górne ograniczenie na ilość cykli i spójność rozwiązania, gdzie $b(V) = \lceil {(\sum_{i \in V}{d_i})/C}\rceil$   to dolne ograniczenie na ilość koniecznych nawrotów do centrali.
+
+\begin{thebibliography}{9}
+\bibitem{AUG} P. Augerat (1995): {\it VRP problem instances.}  Available at http://www.branchandcut.org/VRP/data/
+\bibitem{TSPLIB} G. Reinelt (1991): {\it A traveling salesman problem library, ORSA Journal on computing 3, 376-384.}  Update available at http://www.iwr.uni-heidelberg.de/iwr/comopt/software/TSPLIB95/,
+\bibitem{TOTH} P. Toth, D. Vigo. (2002) {\it Models, relaxations and exact approaches for the capacitated vehicle routing problem.},
+\bibitem{RALPHS} T.K. Ralphs, L. Kopman, W.R. Pulleyblank, L.E. Trotter (2002) {\it On the capacitated vehicle routing problem.},
+\end{thebibliography}
+
+\end{document}
