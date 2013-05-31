@@ -1,0 +1,5 @@
+- rozszerzyc kompatybilnosc z formatem TSPLIB
+- poprawic czytelnosc i pododawac komentarze
+- zrobic pelnoprawny modul(z mozliwoscia instalacji)
+- algorytm - dodac powroty(przy wybraniu pozornie dobrej sciezki)
+- dodac testy jednostkowe
